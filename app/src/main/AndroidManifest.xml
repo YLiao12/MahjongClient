@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="hk.edu.cuhk.ie.mahjongclient">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -10,15 +12,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MahjongClient">
         <activity
+            android:name=".GameActivity"
+            android:exported="true" />
+        <activity
             android:name=".MainActivity"
-            android:screenOrientation="landscape"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".TableActivity"
+            android:exported="true"
+            android:parentActivityName=".MainActivity" />
     </application>
 
 </manifest>
