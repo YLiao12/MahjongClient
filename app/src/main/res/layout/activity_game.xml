@@ -6,4 +6,12 @@
     android:layout_height="match_parent"
     tools:context=".GameActivity">
 
+    <Button
+        android:id="@+id/leaving_room"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Leave the table"
+        android:onClick="to_tables"
+        tools:layout_editor_absoluteX="32dp"
+        tools:layout_editor_absoluteY="43dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

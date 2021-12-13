@@ -25,8 +25,10 @@ import java.util.List;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class TableActivity extends AppCompatActivity {
@@ -154,7 +156,30 @@ public class TableActivity extends AppCompatActivity {
                 Table table = (Table) tableListView.getAdapter().getItem(i);
                 intent.putExtra("tableName", table.getTableName());
                 intent.putExtra("tableId", table.getTableId());
-                intent.putExtra("playerId", player_id);
+                intent.putExtra("playerId", player_id - 1);
+                intent.putExtra("playerName", playerName);
+                RequestBody formBody = new FormBody.Builder()
+                        .add("table_id", String.valueOf(table.getTableId()))
+                        .add("player_id", String.valueOf(player_id - 1))
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url("http://34.92.209.154/mj/coming_into_tables")
+                        .post(formBody)
+                        .build();
+
+                Call call = client.newCall(request);
+                call.enqueue(new Callback() {
+
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+
+                    }
+                });
 
                 startActivity(intent);
             }
