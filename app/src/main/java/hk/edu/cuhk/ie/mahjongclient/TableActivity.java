@@ -33,21 +33,8 @@ import okhttp3.Response;
 
 public class TableActivity extends AppCompatActivity {
 
-    private int player_id;
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what){
-                case 0:
-                    Bundle bundle = msg.getData();
-                    player_id = bundle.getInt("player_id");
-                    player_id ++;
-                    System.out.println(bundle.getInt("player_id"));
-                    break;
-                default:break;
-            }
-        }
-    };
+    private String playerName;
+    private String playerId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,45 +42,8 @@ public class TableActivity extends AppCompatActivity {
         setContentView(R.layout.activity_table);
 
         Bundle extras = getIntent().getExtras();
-        String playerName = extras.getString("playerId");
-        // TODO 获取playerId (查询当前最新编号 + 1）
-        OkHttpClient playerIdClient = new OkHttpClient();
-        Request playerIdRequest = new Request.Builder()       //创建一个请求
-                .url("http://34.92.209.154/mj/player_id")
-                .get()  //表明为get请求
-                .build();
-        Call playerIdCall=playerIdClient.newCall(playerIdRequest);      //创建一个Call
-        playerIdCall.enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Message message = Message.obtain();
-                message.what = 0;
-                Bundle bundle = new Bundle();
-                String data = response.body().string();
-                JSONObject json = null;
-                try {
-                    json = new JSONObject(data);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                int playerId = 0;
-                try {
-                    String arrayString = json.getString("id");
-                    JSONArray array = JSONArray.parseArray(arrayString);
-                    playerId = array.getJSONObject(0).getObject("player_id", Integer.class);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                bundle.putInt("player_id", playerId);
-                message.setData(bundle);
-                mHandler.sendMessage(message);
-            }
-        });
+        playerName = extras.getString("playerName");
+        playerId = extras.getString("playerId");
 
         // 将playerId显示到这个页面
         TextView helloToPlayer = (TextView) findViewById(R.id.hello_To_Player);
@@ -156,11 +106,11 @@ public class TableActivity extends AppCompatActivity {
                 Table table = (Table) tableListView.getAdapter().getItem(i);
                 intent.putExtra("tableName", table.getTableName());
                 intent.putExtra("tableId", table.getTableId());
-                intent.putExtra("playerId", player_id - 1);
+                intent.putExtra("playerId", playerId);
                 intent.putExtra("playerName", playerName);
                 RequestBody formBody = new FormBody.Builder()
                         .add("table_id", String.valueOf(table.getTableId()))
-                        .add("player_id", String.valueOf(player_id - 1))
+                        .add("player_id", playerId)
                         .build();
 
                 Request request = new Request.Builder()
@@ -177,7 +127,6 @@ public class TableActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(Call call, Response response) throws IOException {
-
                     }
                 });
 

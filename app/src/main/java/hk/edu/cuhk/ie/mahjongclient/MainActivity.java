@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.EditText;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -39,13 +40,15 @@ public class MainActivity extends AppCompatActivity {
 
     public void to_tables(View view) {
 
-        // 获取玩家id
+        // 获取玩家Name
         EditText text = (EditText) findViewById(R.id.playerIdEditText);
-        String playerIdString = text.getText().toString();
+        String playerName = text.getText().toString();
+        String playerId = UUID.randomUUID().toString().replaceAll("-", "");;
 
         //okhttp 异步post玩家id，存入数据库
         FormBody.Builder builder = new FormBody.Builder()
-                .add("player_name", playerIdString);
+                .add("player_name", playerName)
+                .add("player_id", playerId);
         RequestBody formBody=builder.build();
         OkHttpClient client = new OkHttpClient();
         Request request = new Request.Builder()
@@ -66,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         //跳转至选择麻将桌页面
         Intent intent = new Intent(MainActivity.this, TableActivity.class);
-        intent.putExtra("playerId", playerIdString);
+        intent.putExtra("playerName", playerName);
+        intent.putExtra("playerId", playerId);
         startActivity(intent);
     }
 }

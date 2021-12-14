@@ -31,13 +31,14 @@ public class GameActivity extends AppCompatActivity {
     public void to_tables(View view) {
 
         Bundle extras = getIntent().getExtras();
-        int playerId = extras.getInt("playerId");
+
+        String playerId = extras.getString("playerId");
         int tableId = extras.getInt("tableId");
         String playerName = extras.getString("playerName");
 
         //okhttp 异步post玩家id，存入数据库
         FormBody.Builder builder = new FormBody.Builder()
-                .add("player_id", String.valueOf(playerId))
+                .add("player_id", playerId)
                 .add("table_id", String.valueOf(tableId));
         RequestBody formBody=builder.build();
         OkHttpClient client = new OkHttpClient();
@@ -59,7 +60,8 @@ public class GameActivity extends AppCompatActivity {
 
         //跳转至选择麻将桌页面
         Intent intent = new Intent(GameActivity.this, TableActivity.class);
-        intent.putExtra("playerId", playerName);
+        intent.putExtra("playerName", playerName);
+        intent.putExtra("playerId", playerId);
         startActivity(intent);
     }
 }
