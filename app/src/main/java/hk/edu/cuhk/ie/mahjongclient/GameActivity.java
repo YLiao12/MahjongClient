@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -18,6 +19,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +40,7 @@ public class GameActivity extends AppCompatActivity {
     Map<Integer, Mahjong> mahjongMap = new HashMap<>();
     Handler handler;
 
+    int player_order;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -162,9 +166,46 @@ public class GameActivity extends AppCompatActivity {
         };
 
         super.onCreate(savedInstanceState);
-
-
         setContentView(R.layout.activity_game);
+
+        ListView mahjongList = (ListView) findViewById(R.id.mahjongList);
+        mahjongList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                // 通过getAdapter()方法取得MyAdapter对象，再调用getItem(int)返回一个Data对象
+                // Intent intent = new Intent(TableActivity.this, GameActivity.class);
+
+                Bundle extras = getIntent().getExtras();
+
+                int tableId = extras.getInt("tableId");
+                Mahjong mahjong = (Mahjong) mahjongList.getAdapter().getItem(i);
+
+                RequestBody formBody = new FormBody.Builder()
+                        .add("mj", String.valueOf(mahjong.getId()))
+                        .add("player_order", String.valueOf(player_order))
+                        .add("table_id", String.valueOf(tableId))
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url("http://34.92.209.154/game/next")
+                        .post(formBody)
+                        .build();
+                OkHttpClient client = new OkHttpClient();
+                client.newCall(request).enqueue(new Callback() {
+                    @Override
+                    public void onFailure(Call call, IOException e) {
+                    }
+
+                    @Override
+                    public void onResponse(Call call, Response response) throws IOException {
+                        ResponseBody body = response.body();
+                        String str = body.string();
+                        body.close();
+                    }
+                });
+            }
+        });
     }
 
     public void to_tables(View view) {
@@ -194,6 +235,7 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 ResponseBody body = response.body();
+                String data = body.string();
                 body.close();
             }
         });
@@ -212,9 +254,10 @@ public class GameActivity extends AppCompatActivity {
         // String playerId = extras.getString("playerId");
         int tableId = extras.getInt("tableId");
         int order = extras.getInt("playerNum");
+        player_order = order + 1;
         StringBuffer orderKeyBuffer = new StringBuffer();
         orderKeyBuffer.append("player");
-        orderKeyBuffer.append(order);
+        orderKeyBuffer.append(player_order);
         String orderKey = orderKeyBuffer.toString();
 
 
@@ -245,10 +288,15 @@ public class GameActivity extends AppCompatActivity {
                 }
                 try {
                     JSONArray playerArray = json.getJSONArray(orderKey);
-                    // List<Integer> playerList = new ArrayList<>();
+                    List<Integer> playerList = new ArrayList<>();
                     List<Mahjong> playerMahjongList = new ArrayList<>();
                     for (int i = 0; i < playerArray.length(); i++) {
-                        playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
+                        playerList.add(playerArray.getInt(i));
+                        //playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
+                    }
+                    playerList.sort(Comparator.naturalOrder());
+                    for (int i = 0; i < playerList.size(); i++) {
+                        playerMahjongList.add(mahjongMap.get(playerList.get(i)));
                     }
 
                     Message message = Message.obtain();
