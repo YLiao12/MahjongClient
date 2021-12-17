@@ -3,9 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Android/MahjongClient/app/src/main/res/drawable/ic_launcher_background.xml" value="0.309375" />
         <entry key="..\:/Android/MahjongClient/app/src/main/res/layout/activity_game.xml" value="0.1703125" />
         <entry key="..\:/Android/MahjongClient/app/src/main/res/layout/activity_main.xml" value="0.2" />
         <entry key="..\:/Android/MahjongClient/app/src/main/res/layout/activity_table.xml" value="0.2390625" />
+        <entry key="..\:/Android/MahjongClient/app/src/main/res/layout/mahjong_item.xml" value="0.26856884057971014" />
         <entry key="..\:/Android/MahjongClient/app/src/main/res/layout/table_item.xml" value="0.18125" />
       </map>
     </option>

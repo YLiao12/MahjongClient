@@ -36,6 +36,7 @@ public class TableActivity extends AppCompatActivity {
     private String playerName;
     private String playerId;
 
+    Handler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +45,7 @@ public class TableActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         playerName = extras.getString("playerName");
         playerId = extras.getString("playerId");
+        // System.out.println("1");
 
         // 将playerId显示到这个页面
         TextView helloToPlayer = (TextView) findViewById(R.id.hello_To_Player);
@@ -52,6 +54,17 @@ public class TableActivity extends AppCompatActivity {
         sb.append(playerName);
         sb.append("! Please choose your table or create a new one: ");
         helloToPlayer.setText(sb.toString());
+
+        handler = new Handler() {
+
+            @Override
+            public void handleMessage(Message msg) {
+                ListView tableListView = (ListView) findViewById(R.id.tableList);
+                TableAdapter chatroomAdapter = new TableAdapter(TableActivity.this, R.layout.table_item, (List) msg.obj);
+                tableListView.setAdapter(chatroomAdapter);
+            }
+        };
+
 
         // 调用 /get_tables API
         OkHttpClient client = new OkHttpClient();
@@ -89,10 +102,11 @@ public class TableActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                Message message = Message.obtain();
+                message.what = 0;
+                message.obj = tableList;
+                handler.sendMessage(message);
 
-                ListView tableListView = (ListView) findViewById(R.id.tableList);
-                TableAdapter chatroomAdapter = new TableAdapter(TableActivity.this, R.layout.table_item, tableList);
-                tableListView.setAdapter(chatroomAdapter);
             }
         });
 
@@ -108,6 +122,7 @@ public class TableActivity extends AppCompatActivity {
                 intent.putExtra("tableId", table.getTableId());
                 intent.putExtra("playerId", playerId);
                 intent.putExtra("playerName", playerName);
+
                 RequestBody formBody = new FormBody.Builder()
                         .add("table_id", String.valueOf(table.getTableId()))
                         .add("player_id", playerId)
@@ -129,7 +144,7 @@ public class TableActivity extends AppCompatActivity {
                     public void onResponse(Call call, Response response) throws IOException {
                     }
                 });
-
+                intent.putExtra("playerNum", table.getPlayersNum());
                 startActivity(intent);
             }
         });
