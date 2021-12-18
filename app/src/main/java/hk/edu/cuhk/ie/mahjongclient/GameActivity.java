@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -41,6 +42,8 @@ public class GameActivity extends AppCompatActivity {
     Handler handler;
 
     int player_order;
+    int playOrder;
+    List<Mahjong> playerMahjongList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -169,6 +172,7 @@ public class GameActivity extends AppCompatActivity {
         setContentView(R.layout.activity_game);
 
         ListView mahjongList = (ListView) findViewById(R.id.mahjongList);
+
         mahjongList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
@@ -178,32 +182,49 @@ public class GameActivity extends AppCompatActivity {
 
                 Bundle extras = getIntent().getExtras();
 
-                int tableId = extras.getInt("tableId");
-                Mahjong mahjong = (Mahjong) mahjongList.getAdapter().getItem(i);
+                if (playOrder == player_order) {
+                    int tableId = extras.getInt("tableId");
+                    Mahjong mahjong = (Mahjong) mahjongList.getAdapter().getItem(i);
+                    playerMahjongList.remove(mahjong);
 
-                RequestBody formBody = new FormBody.Builder()
-                        .add("mj", String.valueOf(mahjong.getId()))
-                        .add("player_order", String.valueOf(player_order))
-                        .add("table_id", String.valueOf(tableId))
-                        .build();
+                    RequestBody formBody = new FormBody.Builder()
+                            .add("mj", String.valueOf(mahjong.getId()))
+                            .add("player_order", String.valueOf(player_order))
+                            .add("table_id", String.valueOf(tableId))
+                            .build();
 
-                Request request = new Request.Builder()
-                        .url("http://34.92.209.154/game/next")
-                        .post(formBody)
-                        .build();
-                OkHttpClient client = new OkHttpClient();
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, IOException e) {
-                    }
+                    Request request = new Request.Builder()
+                            .url("http://34.92.209.154/game/next")
+                            .post(formBody)
+                            .build();
+                    OkHttpClient client = new OkHttpClient();
+                    client.newCall(request).enqueue(new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+                        }
 
-                    @Override
-                    public void onResponse(Call call, Response response) throws IOException {
-                        ResponseBody body = response.body();
-                        String str = body.string();
-                        body.close();
-                    }
-                });
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            ResponseBody body = response.body();
+                            String data = body.string();
+                            JSONObject json = null;
+                            try {
+                                json = new JSONObject(data);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            try {
+                                playOrder = json.getInt("order");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    Message message = Message.obtain();
+                    message.what = 0;
+                    message.obj = playerMahjongList;
+                    handler.sendMessage(message);
+                }
             }
         });
     }
@@ -288,13 +309,16 @@ public class GameActivity extends AppCompatActivity {
                 }
                 try {
                     JSONArray playerArray = json.getJSONArray(orderKey);
+                    playOrder = json.getInt("order");
                     List<Integer> playerList = new ArrayList<>();
-                    List<Mahjong> playerMahjongList = new ArrayList<>();
+                    playerMahjongList = new ArrayList<>();
                     for (int i = 0; i < playerArray.length(); i++) {
                         playerList.add(playerArray.getInt(i));
                         //playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
                     }
-                    playerList.sort(Comparator.naturalOrder());
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        playerList.sort(Comparator.naturalOrder());
+                    }
                     for (int i = 0; i < playerList.size(); i++) {
                         playerMahjongList.add(mahjongMap.get(playerList.get(i)));
                     }
