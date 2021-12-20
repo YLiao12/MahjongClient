@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hk.edu.cuhk.ie.mahjongclient">
+    package="hk.edu.cuhk.ie.group23">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -12,10 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MahjongClient">
         <activity
-            android:name=".GameActivity"
+            android:name="hk.edu.cuhk.ie.group23.GameActivity"
             android:exported="true" />
         <activity
-            android:name=".MainActivity"
+            android:name="hk.edu.cuhk.ie.group23.MainActivity"
             android:exported="true"
             android:screenOrientation="landscape">
             <intent-filter>
@@ -25,9 +25,9 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TableActivity"
+            android:name="hk.edu.cuhk.ie.group23.TableActivity"
             android:exported="true"
-            android:parentActivityName=".MainActivity" />
+            android:parentActivityName="hk.edu.cuhk.ie.group23.MainActivity" />
     </application>
 
 </manifest>

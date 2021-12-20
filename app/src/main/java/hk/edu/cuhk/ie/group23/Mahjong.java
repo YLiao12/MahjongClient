@@ -1,4 +1,4 @@
-package hk.edu.cuhk.ie.mahjongclient;
+package hk.edu.cuhk.ie.group23;
 
 public class Mahjong {
     private int id;

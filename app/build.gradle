@@ -6,7 +6,7 @@ android {
     compileSdk 31
 
     defaultConfig {
-        applicationId "hk.edu.cuhk.ie.mahjongclient"
+        applicationId "hk.edu.cuhk.ie.group23"
         minSdk 21
         targetSdk 31
         versionCode 1
@@ -39,6 +39,9 @@ dependencies {
     implementation 'androidx.navigation:navigation-ui:2.3.5'
     implementation 'com.squareup.okhttp3:okhttp:3.4.1'
     implementation 'com.alibaba:fastjson:1.1.72.android'
+    implementation ('io.socket:socket.io-client:2.0.0') {
+        exclude group: 'org.json', module: 'json'
+    }
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'

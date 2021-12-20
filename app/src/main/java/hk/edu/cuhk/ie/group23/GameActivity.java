@@ -1,7 +1,6 @@
-package hk.edu.cuhk.ie.mahjongclient;
+package hk.edu.cuhk.ie.group23;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Build;
@@ -11,7 +10,6 @@ import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -20,10 +18,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +35,18 @@ import okhttp3.ResponseBody;
 public class GameActivity extends AppCompatActivity {
 
     Map<Integer, Mahjong> mahjongMap = new HashMap<>();
-    Handler handler;
+    // Handler handler;
+
+    private class MyHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            ListView mahjongListView = (ListView) findViewById(R.id.mahjongList);
+            MahjongAdapter mahjongAdapter = new MahjongAdapter(GameActivity.this, R.layout.mahjong_item, (List) msg.obj);
+            mahjongListView.setAdapter(mahjongAdapter);
+        }
+    };
+
+    MyHandler handler;
 
     int player_order;
     int playOrder;
@@ -157,16 +164,17 @@ public class GameActivity extends AppCompatActivity {
         mahjongMap.put(107, new Mahjong(107, "9t"));
         mahjongMap.put(108, new Mahjong(108, "9t"));
 
-        handler = new Handler() {
-
-            @Override
-            public void handleMessage(Message msg) {
-                ListView mahjongListView = (ListView) findViewById(R.id.mahjongList);
-                MahjongAdapter mahjongAdapter = new MahjongAdapter(GameActivity.this, R.layout.mahjong_item, (List) msg.obj);
-                mahjongListView.setAdapter(mahjongAdapter);
-                // mahjongListView.setRotation(-90);
-            }
-        };
+//        handler = new Handler() {
+//
+//            @Override
+//            public void handleMessage(Message msg) {
+//                ListView mahjongListView = (ListView) findViewById(R.id.mahjongList);
+//                MahjongAdapter mahjongAdapter = new MahjongAdapter(GameActivity.this, R.layout.mahjong_item, (List) msg.obj);
+//                mahjongListView.setAdapter(mahjongAdapter);
+//                // mahjongListView.setRotation(-90);
+//            }
+//        };
+        handler = new MyHandler();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);

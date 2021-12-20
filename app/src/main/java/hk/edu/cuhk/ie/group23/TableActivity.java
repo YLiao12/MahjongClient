@@ -1,10 +1,8 @@
-package hk.edu.cuhk.ie.mahjongclient;
+package hk.edu.cuhk.ie.group23;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -36,7 +34,15 @@ public class TableActivity extends AppCompatActivity {
     private String playerName;
     private String playerId;
 
-    Handler handler;
+    private class MyHandler extends Handler{
+        @Override
+        public void handleMessage(Message msg) {
+            ListView tableListView = (ListView) findViewById(R.id.tableList);
+            TableAdapter chatroomAdapter = new TableAdapter(TableActivity.this, R.layout.table_item, (List) msg.obj);
+            tableListView.setAdapter(chatroomAdapter);
+        }
+    };
+    MyHandler handler;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,15 +61,7 @@ public class TableActivity extends AppCompatActivity {
         sb.append("! Please choose your table or create a new one: ");
         helloToPlayer.setText(sb.toString());
 
-        handler = new Handler() {
-
-            @Override
-            public void handleMessage(Message msg) {
-                ListView tableListView = (ListView) findViewById(R.id.tableList);
-                TableAdapter chatroomAdapter = new TableAdapter(TableActivity.this, R.layout.table_item, (List) msg.obj);
-                tableListView.setAdapter(chatroomAdapter);
-            }
-        };
+        handler = new MyHandler();
 
 
         // 调用 /get_tables API
