@@ -18,9 +18,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -31,6 +35,7 @@ import okhttp3.Response;
 
 public class TableActivity extends AppCompatActivity {
 
+    public Socket socket;
     private String playerName;
     private String playerId;
 
@@ -62,9 +67,6 @@ public class TableActivity extends AppCompatActivity {
         helloToPlayer.setText(sb.toString());
 
         handler = new MyHandler();
-
-
-
 
         // 调用 /get_tables API
         OkHttpClient client = new OkHttpClient();
@@ -146,6 +148,7 @@ public class TableActivity extends AppCompatActivity {
                 });
                 intent.putExtra("playerNum", table.getPlayersNum());
                 startActivity(intent);
+
             }
         });
 

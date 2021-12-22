@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/RelativeLayout1"
     android:layout_width="match_parent"
@@ -42,5 +43,12 @@
         android:headerDividersEnabled="false"
         android:minHeight="5dp"
         android:rotation="90" />
+
+    <ImageView
+        android:id="@+id/mj_played"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        app:srcCompat="@drawable/hai_00_wan_1_bottom" />
 
 </LinearLayout>
