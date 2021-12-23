@@ -394,7 +394,7 @@ public class GameActivity extends AppCompatActivity {
                 int nextPlayOrder = json.getInt("order");
                 int mj_id = json.getInt("mj");
                 Mahjong newMj = mahjongMap.get(mj_id);
-                if (playOrder == nextPlayOrder) {
+                if (player_order == nextPlayOrder) {
                     playerMahjongList.add(newMj);
                     //sort
                     Message message = Message.obtain();
