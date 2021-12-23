@@ -270,6 +270,8 @@ public class GameActivity extends AppCompatActivity {
             socket.on(Socket.EVENT_CONNECT, onConnectSuccess);
             socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             socket.on("start_game", startGame);
+            socket.on("mj", mjShow);
+            socket.on("next", nextMjDisplay);
             JSONObject data = new JSONObject();
             data.put("room", tableId);
             data.put("playerNum", playerNum);
@@ -283,9 +285,6 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                // 通过getAdapter()方法取得MyAdapter对象，再调用getItem(int)返回一个Data对象
-                // Intent intent = new Intent(TableActivity.this, GameActivity.class);
-
                 Bundle extras = getIntent().getExtras();
 
                 //if (playOrder == player_order) {
@@ -321,6 +320,15 @@ public class GameActivity extends AppCompatActivity {
                             }
                             try {
                                 playOrder = json.getInt("order");
+                                int mj_id = json.getInt("mj");
+
+                                JSONObject nextData = new JSONObject();
+                                nextData.put("mj", mj_id);
+                                nextData.put("order", playOrder);
+                                nextData.put("room", tableId);
+
+                                socket.emit("next", nextData);
+                                // socket.on("next", nextMjDisplay);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -329,21 +337,15 @@ public class GameActivity extends AppCompatActivity {
 
                     try {
 
-                        socket.on("mj", mjShow);
+                        // socket.on("mj", mjShow);
 
                         JSONObject data = new JSONObject();
                         data.put("mj", mahjong.getId());
                         data.put("room", tableId);
                         socket.emit("mj", data);
-                        // socket.emit("connect");
-
-                        // socket.emit("mj", data);
-                        // socket.connect();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-
-                    //socket.on("my event", onMyEvent);
                     Message message = Message.obtain();
                     message.what = 0;
                     message.obj = playerMahjongList;
@@ -378,6 +380,33 @@ public class GameActivity extends AppCompatActivity {
         public void call(Object... args) {
 
             System.out.println("Connect Error");
+        }
+    };
+
+    private Emitter.Listener nextMjDisplay = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+
+            // get mj and order from args
+            // update mjListView
+            JSONObject json = (JSONObject) args[0];
+            try {
+                int nextPlayOrder = json.getInt("order");
+                int mj_id = json.getInt("mj");
+                Mahjong newMj = mahjongMap.get(mj_id);
+                if (playOrder == nextPlayOrder) {
+                    playerMahjongList.add(newMj);
+                    //sort
+                    Message message = Message.obtain();
+                    message.what = 0;
+                    message.obj = playerMahjongList;
+                    handler.sendMessage(message);
+                }
+                // playerMahjongList.add(newMj);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
     };
 
@@ -458,9 +487,6 @@ public class GameActivity extends AppCompatActivity {
                     body.close();
                 }
             });
-
-//            Button startButton = (Button) findViewById(R.id.game_start);
-//            startButton.setVisibility(View.GONE);
         }
     };
 
@@ -510,14 +536,10 @@ public class GameActivity extends AppCompatActivity {
         // String playerId = extras.getString("playerId");
         int tableId = extras.getInt("tableId");
         try {
-//            socket = IO.socket("http://34.92.209.154:8085/");
-//            socket.on(Socket.EVENT_CONNECT, onConnectSuccess);
-//            socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             JSONObject data = new JSONObject();
             data.put("room", tableId);
             socket.emit("start_game", data);
-            socket.on("start_game", startGame);
-//            socket.connect();
+            // socket.on("start_game", startGame);
         } catch (JSONException e) {
             e.printStackTrace();
         }
