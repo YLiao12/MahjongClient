@@ -344,7 +344,7 @@ public class GameActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Bundle extras = getIntent().getExtras();
 
-                //if (playOrder == player_order) {
+                if (playOrder == player_order) {
                     int tableId = extras.getInt("tableId");
                     Mahjong mahjong = (Mahjong) mahjongList.getAdapter().getItem(i);
                     playerMahjongList.remove(mahjong);
@@ -412,7 +412,7 @@ public class GameActivity extends AppCompatActivity {
                     message.arg2 = player_order;
                     handler.sendMessage(message);
                 }
-            //}
+            }
         });
     }
 
