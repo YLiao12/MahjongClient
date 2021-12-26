@@ -53,7 +53,7 @@
     <ListView
         android:id="@+id/mahjongList"
         android:layout_width="63dp"
-        android:layout_height="714dp"
+        android:layout_height="618dp"
 
         android:layout_marginStart="69dp"
 

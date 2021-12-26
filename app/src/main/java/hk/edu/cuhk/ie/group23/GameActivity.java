@@ -522,29 +522,31 @@ public class GameActivity extends AppCompatActivity {
             }
             List<Integer> playerList = new ArrayList<>();
             playerMahjongList = new ArrayList<>();
-            for (int i = 0; i < playerArray.length(); i++) {
-                try {
-                    playerList.add(playerArray.getInt(i));
-                } catch (JSONException e) {
-                    e.printStackTrace();
+            if (playerArray !=null) {
+                for (int i = 0; i < playerArray.length(); i++) {
+                    try {
+                        playerList.add(playerArray.getInt(i));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    //playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
                 }
-                //playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                playerList.sort(Comparator.naturalOrder());
-            }
-            for (int i = 0; i < playerList.size(); i++) {
-                playerMahjongList.add(mahjongMap.get(playerList.get(i)));
-            }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    playerList.sort(Comparator.naturalOrder());
+                }
+                for (int i = 0; i < playerList.size(); i++) {
+                    playerMahjongList.add(mahjongMap.get(playerList.get(i)));
+                }
 
-            mahjongNum = 55;
+                mahjongNum = 55;
 
-            Message message = Message.obtain();
-            message.what = 0;
-            message.obj = playerMahjongList;
-            message.arg1 = playOrder;
-            message.arg2 = 55;
-            handler.sendMessage(message);
+                Message message = Message.obtain();
+                message.what = 0;
+                message.obj = playerMahjongList;
+                message.arg1 = playOrder;
+                message.arg2 = 55;
+                handler.sendMessage(message);
+            }
         }
     };
 
@@ -662,18 +664,20 @@ public class GameActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-                try {
-                    player_order = json.getInt("player_order");
-                    // System.out.println(playerArray.length());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                Message message = Message.obtain();
-                message.what = 1;
-                message.arg2 = player_order;
-                handler.sendMessage(message);
+                if(json !=null) {
+                    try {
+                        player_order = json.getInt("player_order");
+                        // System.out.println(playerArray.length());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    Message message = Message.obtain();
+                    message.what = 1;
+                    message.arg2 = player_order;
+                    handler.sendMessage(message);
 
-                body.close();
+                    body.close();
+                }
             }
         });
 
