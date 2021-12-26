@@ -14,25 +14,46 @@
         android:onClick="to_tables"
         android:text="Leave the table" />
 
-    <Button
-        android:id="@+id/game_start"
+
+    <TableLayout
+        android:id="@+id/btns"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="game_start"
-        android:text="Start!"
-        android:layout_toRightOf="@id/leaving_room"/>
+        android:layout_height="wrap_content">
+
+        <TableRow>
+
+            <Button
+                android:id="@+id/ready"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="ready"
+                android:text="Ready!" />
+        </TableRow>
+
+        <TableRow>
+
+            <Button
+                android:id="@+id/game_start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="game_start"
+                android:text="Start!"
+                />
+        </TableRow>
+    </TableLayout>
 
     <Button
         android:id="@+id/win"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:onClick="win"
         android:text="Win!"
         android:layout_toRightOf="@id/leaving_room"/>
 
     <ListView
         android:id="@+id/mahjongList"
         android:layout_width="63dp"
-        android:layout_height="614dp"
+        android:layout_height="714dp"
 
         android:layout_marginStart="69dp"
 
@@ -46,9 +67,57 @@
 
     <ImageView
         android:id="@+id/mj_played"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         app:srcCompat="@drawable/hai_00_wan_1_bottom" />
+
+
+
+    <TableLayout
+        android:id="@+id/bottom_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/player_order"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Your order" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/playing_order"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Now turn" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/mahjong_num"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Mahjong left" />
+        </TableRow>
+    </TableLayout>
+
+    <TextView
+        android:id="@+id/win_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="TextView" />
+
+
+
 
 </LinearLayout>

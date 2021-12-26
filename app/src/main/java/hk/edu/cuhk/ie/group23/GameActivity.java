@@ -1,18 +1,23 @@
 package hk.edu.cuhk.ie.group23;
 
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.versionedparcelable.ParcelField;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -47,17 +52,58 @@ public class GameActivity extends AppCompatActivity {
     private class MyHandler extends Handler{
         @Override
         public void handleMessage(Message msg) {
-            ListView mahjongListView = (ListView) findViewById(R.id.mahjongList);
-            MahjongAdapter mahjongAdapter = new MahjongAdapter(GameActivity.this, R.layout.mahjong_item, (List) msg.obj);
-            mahjongListView.setAdapter(mahjongAdapter);
-        }
-    };
-
-    private class ButtonHandler extends Handler{
-        @Override
-        public void handleMessage(Message msg) {
+            TextView winText = (TextView) findViewById(R.id.win_text);
+            TextView mahjongNumText = (TextView) findViewById(R.id.mahjong_num);
             Button startButton = (Button) findViewById(R.id.game_start);
-            startButton.setVisibility(View.GONE);
+            Button readyButton = (Button) findViewById(R.id.ready);
+            ListView mahjongListView = (ListView) findViewById(R.id.mahjongList);
+            switch (msg.what) {
+                case 0:
+                    MahjongAdapter mahjongAdapter = new MahjongAdapter(GameActivity.this, R.layout.mahjong_item, (List) msg.obj);
+                    mahjongListView.setAdapter(mahjongAdapter);
+                    TextView playing_order_text = (TextView) findViewById(R.id.playing_order);
+                    StringBuffer playerSb = new StringBuffer();
+                    playerSb.append("Now it's player");
+                    playerSb.append(msg.arg1);
+                    playerSb.append("'s turn");
+                    playing_order_text.setText(playerSb.toString());
+
+                    StringBuffer mjSb = new StringBuffer();
+                    mjSb.append(msg.arg2);
+                    mjSb.append(" mahjongs left");
+                    mahjongNumText.setText(mjSb.toString());
+                    mahjongNumText.setVisibility(View.VISIBLE);
+
+                    startButton.setVisibility(View.GONE);
+                    winText.setVisibility(View.GONE);
+                    break;
+                case 1:
+                    TextView player_order = (TextView) findViewById(R.id.player_order);
+                    StringBuffer orderSb = new StringBuffer();
+                    orderSb.append("You're player");
+                    orderSb.append(msg.arg2);
+                    player_order.setText(orderSb.toString());
+                    readyButton.setVisibility(View.GONE);
+                    startButton.setVisibility(View.VISIBLE);
+                    break;
+                case 2:
+                    startButton.setVisibility(View.VISIBLE);
+                    playerMahjongList.clear();
+                    MahjongAdapter mahjongWinAdapter = new MahjongAdapter(GameActivity.this, R.layout.mahjong_item, playerMahjongList);
+                    mahjongListView.setAdapter(mahjongWinAdapter);
+                    ImageView mj_played = (ImageView) findViewById(R.id.mj_played);
+                    mj_played.setVisibility(View.GONE);
+                    StringBuffer sb = new StringBuffer();
+                    sb.append("player ");
+                    sb.append(msg.arg1);
+                    sb.append(" has won!");
+                    winText.setText(sb.toString());
+                    winText.setVisibility(View.VISIBLE);
+                    mahjongNumText.setText("Mahjong left");
+                    break;
+                case 3:
+                    break;
+            }
         }
     };
 
@@ -130,11 +176,12 @@ public class GameActivity extends AppCompatActivity {
 
     MyHandler handler;
     PlayedMjHandler mjHandler;
-    ButtonHandler btnHandler;
+//    ButtonHandler btnHandler;
 
     int player_order;
     int playOrder;
     List<Mahjong> playerMahjongList;
+    int mahjongNum;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -250,7 +297,10 @@ public class GameActivity extends AppCompatActivity {
 
         handler = new MyHandler();
         mjHandler = new PlayedMjHandler();
-        btnHandler = new ButtonHandler();
+//        btnHandler = new ButtonHandler();
+
+        TextView mjNumText = (TextView) findViewById(R.id.mahjong_num);
+        // mjNumText.setVisibility(View.GONE);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
@@ -258,6 +308,12 @@ public class GameActivity extends AppCompatActivity {
         ListView mahjongList = (ListView) findViewById(R.id.mahjongList);
         ImageView mj_played = (ImageView) findViewById(R.id.mj_played);
         mj_played.setVisibility(View.GONE);
+
+        TextView winText = (TextView) findViewById(R.id.win_text);
+        winText.setVisibility(View.GONE);
+
+        Button startGameButton = (Button) findViewById(R.id.game_start);
+        startGameButton.setVisibility(View.GONE);
 
         Bundle extras = getIntent().getExtras();
 
@@ -272,6 +328,7 @@ public class GameActivity extends AppCompatActivity {
             socket.on("start_game", startGame);
             socket.on("mj", mjShow);
             socket.on("next", nextMjDisplay);
+            socket.on("win", winBroadcast);
             JSONObject data = new JSONObject();
             data.put("room", tableId);
             data.put("playerNum", playerNum);
@@ -291,6 +348,7 @@ public class GameActivity extends AppCompatActivity {
                     int tableId = extras.getInt("tableId");
                     Mahjong mahjong = (Mahjong) mahjongList.getAdapter().getItem(i);
                     playerMahjongList.remove(mahjong);
+                    mahjongNum --;
 
                     RequestBody formBody = new FormBody.Builder()
                             .add("mj", String.valueOf(mahjong.getId()))
@@ -326,6 +384,7 @@ public class GameActivity extends AppCompatActivity {
                                 nextData.put("mj", mj_id);
                                 nextData.put("order", playOrder);
                                 nextData.put("room", tableId);
+                                nextData.put("mj_num", mahjongNum);
 
                                 socket.emit("next", nextData);
                                 // socket.on("next", nextMjDisplay);
@@ -349,6 +408,8 @@ public class GameActivity extends AppCompatActivity {
                     Message message = Message.obtain();
                     message.what = 0;
                     message.obj = playerMahjongList;
+                    message.arg1 = playOrder;
+                    message.arg2 = player_order;
                     handler.sendMessage(message);
                 }
             //}
@@ -383,7 +444,23 @@ public class GameActivity extends AppCompatActivity {
         }
     };
 
+    private Emitter.Listener winBroadcast = new Emitter.Listener() {
+        @Override
+        public void call(Object... args) {
+            Message message = Message.obtain();
+            message.what = 2;
+            JSONObject json = (JSONObject) args[0];
+            try {
+                message.arg1 = json.getInt("player_order");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            handler.sendMessage(message);
+        }
+    };
+
     private Emitter.Listener nextMjDisplay = new Emitter.Listener() {
+
         @Override
         public void call(Object... args) {
 
@@ -391,17 +468,29 @@ public class GameActivity extends AppCompatActivity {
             // update mjListView
             JSONObject json = (JSONObject) args[0];
             try {
-                int nextPlayOrder = json.getInt("order");
+                playOrder = json.getInt("order");
                 int mj_id = json.getInt("mj");
+                mahjongNum = json.getInt("mj_num");
                 Mahjong newMj = mahjongMap.get(mj_id);
-                if (player_order == nextPlayOrder) {
+                if (player_order == playOrder) {
                     playerMahjongList.add(newMj);
                     //sort
-                    Message message = Message.obtain();
-                    message.what = 0;
-                    message.obj = playerMahjongList;
-                    handler.sendMessage(message);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        playerMahjongList.sort(new Comparator<Mahjong>() {
+                            @Override
+                            public int compare(Mahjong o1, Mahjong o2) {
+                                return o1.getId() < o2.getId()? -1 : o1.getId() == o1.getId() ? 0: 1;
+                            }
+                        });
+                    }
                 }
+                Message message = Message.obtain();
+                message.what = 0;
+                message.obj = playerMahjongList;
+                message.arg1 = playOrder;
+                message.arg2 = mahjongNum;
+
+                handler.sendMessage(message);
                 // playerMahjongList.add(newMj);
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -414,79 +503,48 @@ public class GameActivity extends AppCompatActivity {
         @Override
         public void call(Object... args) {
 
-            Bundle extras = getIntent().getExtras();
-
-            String playerId = extras.getString("playerId");
-            int tableId = extras.getInt("tableId");
-            String playerName = extras.getString("playerName");
-            int playerNum = extras.getInt("playerNum");
-
-            player_order = playerNum + 1;
             StringBuffer orderKeyBuffer = new StringBuffer();
             orderKeyBuffer.append("player");
             orderKeyBuffer.append(player_order);
             String orderKey = orderKeyBuffer.toString();
 
-            // System.out.println("Connect Error");
-            //okhttp 异步post
-            FormBody.Builder builder = new FormBody.Builder()
-                    .add("table_id", String.valueOf(tableId));
-            RequestBody formBody=builder.build();
-            OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder()
-                    .url("http://34.92.209.154/game/start_game")
-                    .post(formBody)
-                    .build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
+            JSONObject json = (JSONObject) args[0];
+            JSONArray playerArray = null;
+            try {
+                playerArray = json.getJSONArray(orderKey);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                playOrder = json.getInt("order");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            List<Integer> playerList = new ArrayList<>();
+            playerMahjongList = new ArrayList<>();
+            for (int i = 0; i < playerArray.length(); i++) {
+                try {
+                    playerList.add(playerArray.getInt(i));
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+                //playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                playerList.sort(Comparator.naturalOrder());
+            }
+            for (int i = 0; i < playerList.size(); i++) {
+                playerMahjongList.add(mahjongMap.get(playerList.get(i)));
+            }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    ResponseBody body = response.body();
-                    String data = body.string();
-                    JSONObject json = null;
-                    try {
-                        json = new JSONObject(data);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                    try {
-                        JSONArray playerArray = json.getJSONArray(orderKey);
-                        playOrder = json.getInt("order");
-                        List<Integer> playerList = new ArrayList<>();
-                        playerMahjongList = new ArrayList<>();
-                        for (int i = 0; i < playerArray.length(); i++) {
-                            playerList.add(playerArray.getInt(i));
-                            //playerMahjongList.add(mahjongMap.get(playerArray.getInt(i)));
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            playerList.sort(Comparator.naturalOrder());
-                        }
-                        for (int i = 0; i < playerList.size(); i++) {
-                            playerMahjongList.add(mahjongMap.get(playerList.get(i)));
-                        }
+            mahjongNum = 55;
 
-                        Message message = Message.obtain();
-                        message.what = 0;
-                        message.obj = playerMahjongList;
-                        handler.sendMessage(message);
-
-                        Message message1 = Message.obtain();
-                        message1.what = 0;
-                        //message.obj = playerMahjongList;
-                        btnHandler.sendMessage(message1);
-
-                        // System.out.println(playerArray.length());
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    body.close();
-                }
-            });
+            Message message = Message.obtain();
+            message.what = 0;
+            message.obj = playerMahjongList;
+            message.arg1 = playOrder;
+            message.arg2 = 55;
+            handler.sendMessage(message);
         }
     };
 
@@ -532,16 +590,134 @@ public class GameActivity extends AppCompatActivity {
     public void game_start(View view) {
 
         Bundle extras = getIntent().getExtras();
+        int tableId = extras.getInt("tableId");
+        mahjongNum = 55;
+        //okhttp 异步post
+        FormBody.Builder Builder = new FormBody.Builder()
+                .add("table_id", String.valueOf(tableId));
+        RequestBody FormBody=Builder.build();
+        OkHttpClient Client = new OkHttpClient();
+        Request Request = new Request.Builder()
+                .url("http://34.92.209.154/game/start_game")
+                .post(FormBody)
+                .build();
 
+        Client.newCall(Request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                ResponseBody body = response.body();
+                String data = body.string();
+                JSONObject json = null;
+                try {
+                    json = new JSONObject(data);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    json.put("room", tableId);
+                    socket.emit("start_game", json);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                body.close();
+            }
+        });
+    }
+
+    public void ready(View view) {
+        //generate player order
+        Bundle extras = getIntent().getExtras();
+
+        String playerId = extras.getString("playerId");
+        int tableId = extras.getInt("tableId");
+
+        //okhttp 获取order
+        FormBody.Builder builder = new FormBody.Builder()
+                .add("table_id", String.valueOf(tableId))
+                .add("player_id", playerId);
+        RequestBody formBody = builder.build();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://34.92.209.154/game/get_order")
+                .post(formBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                ResponseBody body = response.body();
+                String data = body.string();
+                JSONObject json = null;
+                try {
+                    json = new JSONObject(data);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    player_order = json.getInt("player_order");
+                    // System.out.println(playerArray.length());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Message message = Message.obtain();
+                message.what = 1;
+                message.arg2 = player_order;
+                handler.sendMessage(message);
+
+                body.close();
+            }
+        });
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void win(View view) {
+        Bundle extras = getIntent().getExtras();
         // String playerId = extras.getString("playerId");
         int tableId = extras.getInt("tableId");
+
         try {
             JSONObject data = new JSONObject();
             data.put("room", tableId);
-            socket.emit("start_game", data);
-            // socket.on("start_game", startGame);
+            data.put("player_order", player_order);
+            socket.emit("win", data);
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        FormBody.Builder builder = new FormBody.Builder()
+                .add("table_id", String.valueOf(tableId));
+        RequestBody formBody=builder.build();
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url("http://34.92.209.154/game/win")
+                .post(formBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                ResponseBody body = response.body();
+                String data = body.string();
+                body.close();
+            }
+        });
     }
 }
