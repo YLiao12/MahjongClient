@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -46,7 +47,7 @@ import okhttp3.ResponseBody;
 public class GameActivity extends AppCompatActivity {
 
     private Socket socket;
-    Map<Integer, Mahjong> mahjongMap = new HashMap<>();
+    Map<Integer, Mahjong> mahjongMap = new ConcurrentHashMap<>();
     // Handler handler;
 
     private class MyHandler extends Handler{
